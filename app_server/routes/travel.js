@@ -4,6 +4,6 @@ var controller = require('../controllers/travel');
 
 /*GET travel page */
 
-router.get('/', controller.index);
+router.get('/travel', controller.travel);
 
 module.exports = router;
