@@ -105,7 +105,8 @@ return res
   .status(201)
   .json(q);
   }
-  // Uncomment the following line to show results of operation
+  // Uncomment the following line to show results of
+  operation
   // on the console
   // console.log(q);
   };
