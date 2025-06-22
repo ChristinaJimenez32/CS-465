@@ -1,32 +1,57 @@
-import { Injectable } from '@angular/core';
+import { Injectable, Inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { Trip } from '../models/trip';
-import { formatDate } from '@angular/common';
+import { User } from '../models/user';
+import { AuthResponse } from '../models/auth-response';
+import { BROWSER_STORAGE } from '../storage';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TripData {
+  private baseUrl = 'http://localhost:3000/api';  // Supports /trips, /login, /register
+  private tripsUrl = this.baseUrl + '/trips';
 
-  constructor(private http: HttpClient) {}
-  url = 'http://localhost:3000/api/trips';
+  constructor(
+    private http: HttpClient,
+    @Inject(BROWSER_STORAGE) private storage: Storage
+  ) {}
 
-  getTrips() : Observable<Trip[]> {
-    return this.http.get<Trip[]>(this.url);
+  // Trips Endpoints
+  getTrips(): Observable<Trip[]> {
+    return this.http.get<Trip[]>(this.tripsUrl);
   }
 
-  addTrip(formData: Trip) : Observable<Trip> {
-    return this.http.post<Trip>(this.url, formData);
+  addTrip(formData: Trip): Observable<Trip> {
+    return this.http.post<Trip>(this.tripsUrl, formData);
   }
-  getTrip(tripCode: string) : Observable<Trip[]> {
-    //console/log('Inside TripDataService::getTrips');
-    return this.http.get<Trip[]>(this.url + '/' + tripCode);
+
+  getTrip(tripCode: string): Observable<Trip[]> {
+    return this.http.get<Trip[]>(`${this.tripsUrl}/${tripCode}`);
   }
+
   updateTrip(formData: Trip): Observable<Trip> {
-    ////console/log('Inside TripDataService::addTrips');
-    return this.http.put<Trip>(this.url + '/'+ formData.code, formData);
-  }
+    return this.http.put<Trip>(`${this.tripsUrl}/${formData.code}`, formData);
   }
 
+  // Auth Endpoints
+  login(user: User, passwd: string): Observable<AuthResponse> {
+    return this.handleAuthAPICall('login', user, passwd);
+  }
+
+  register(user: User, passwd: string): Observable<AuthResponse> {
+    return this.handleAuthAPICall('register', user, passwd);
+  }
+
+  // Helper for Auth API calls
+  private handleAuthAPICall(endpoint: string, user: User, passwd: string): Observable<AuthResponse> {
+    const formData = {
+      name: user.name,
+      email: user.email,
+      password: passwd
+    };
+    return this.http.post<AuthResponse>(`${this.baseUrl}/${endpoint}`, formData);
+  }
+}
